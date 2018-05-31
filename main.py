@@ -17,7 +17,7 @@ def find_reference_for_cite_regex(cite_regex):
         result = re.findall(cite_regex, reference)
         if result:
             assert len(result) == 1
-            return result[0]
+            return reference
 
 
 def get_references_as_lines(docx_path):
