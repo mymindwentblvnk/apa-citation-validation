@@ -13,11 +13,11 @@ EXCLUDE = set(string.punctuation) - set('-')
 
 
 def find_reference_for_cite_regex(cite_regex):
-    for reference in references:
+    for reference_id, reference in enumerate(references, 0):
         result = re.findall(cite_regex, reference)
         if result:
             assert len(result) == 1
-            return reference
+            return reference_id, reference
 
 
 def get_references_as_lines(docx_path):
@@ -82,6 +82,7 @@ if __name__ == '__main__':
 
     result = list()
     references = get_references_as_lines(docx_path)
+    found_reference_ids = set()
     text = get_text_as_string(docx_path)
 
     citations = re.findall(REGEX, text)
@@ -95,7 +96,8 @@ if __name__ == '__main__':
                     name = cite.split(' et al., ')[0].strip()
                     year = cite.split(' et al., ')[1].strip()
                     regex = '{}.*\({}\).*'.format(name, year)
-                    reference = find_reference_for_cite_regex(regex)
+                    reference_index, reference = find_reference_for_cite_regex(regex)
+                    found_reference_ids.add(reference_index)
                     result.append(CitationResult(citation_in_text=citation,
                                                  citation=cite,
                                                  regex=regex,
@@ -108,7 +110,8 @@ if __name__ == '__main__':
                         names = names_and_year[0].split('&')
                         name_regex = ''.join(['{}.*'.format(n.strip()) for n in names])
                         regex = name_regex + '\({}\)'.format(year)
-                        reference = find_reference_for_cite_regex(regex)
+                        reference_index, reference = find_reference_for_cite_regex(regex)
+                        found_reference_ids.add(reference_index)
                         result.append(CitationResult(citation_in_text=citation,
                                                      citation=cite,
                                                      regex=regex,
@@ -120,7 +123,8 @@ if __name__ == '__main__':
                         year = names_and_year[-1].strip()
                         name_regex = ''.join(['{}.*'.format(n.strip()) for n in names])
                         regex = name_regex + '\({}\)'.format(year)
-                        reference = find_reference_for_cite_regex(regex)
+                        reference_index, reference = find_reference_for_cite_regex(regex)
+                        found_reference_ids.add(reference_index)
                         result.append(CitationResult(citation_in_text=citation,
                                                      citation=cite,
                                                      regex=regex,
@@ -134,3 +138,15 @@ if __name__ == '__main__':
     for r in result:
         if not r.found:
             print(r)
+
+
+    obslete_reference_ids = set(range(len(references))) -  found_reference_ids
+    if obslete_reference_ids:
+        print()
+        print("*"*30)
+        print(len(obslete_reference_ids), "REFERENCES ARE NOT CITED")
+        print("*"*30)
+        for i in obslete_reference_ids:
+            print()
+            print("REFERENCE NO.", i, "SEEMS NOT TO BE CITED.")
+            print(references[i])
