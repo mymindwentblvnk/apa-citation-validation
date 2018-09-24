@@ -88,8 +88,11 @@ if __name__ == '__main__':
     citations = re.findall(REGEX, text)
 
     for citation in citations:
+        cleaned_citation = citation.replace('e.g., ', '')\
+                                   .replace('i.e., ', '')\
+                                   .replace('see ', '')
         try:
-            cites = citation.split(';')
+            cites = cleaned_citation.split(';')
             for index, cite in enumerate(cites, 1):
                 cite = cite.replace('(', '').replace(')', '').strip()
                 if ' et al' in cite:
